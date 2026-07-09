@@ -1,6 +1,32 @@
 version: '3.8'
 
 services:
+  # LocalStack for AWS Services Emulation (KMS, etc.)
+  localstack:
+    image: localstack/localstack:latest
+    container_name: pii-vault-localstack
+    ports:
+      - "4566:4566"
+      - "4571:4571"
+    environment:
+      SERVICES: kms,cloudtrail,logs
+      DEBUG: "false"
+      DATA_DIR: /tmp/localstack/data
+      DOCKER_HOST: unix:///var/run/docker.sock
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    volumes:
+      - localstack_data:/tmp/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "awslocal", "kms", "list-keys"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pii-vault-network
+
   # PostgreSQL database for PII Vault
   postgres:
     image: docker.io/library/postgres:16-alpine
@@ -30,17 +56,31 @@ services:
     container_name: pii-vault-app
     environment:
       SPRING_PROFILES_ACTIVE: dev
+      # PostgreSQL Configuration
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pii_vault
       SPRING_DATASOURCE_USERNAME: vault_user
       SPRING_DATASOURCE_PASSWORD: vault_password_dev
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "false"
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      # AWS Configuration (LocalStack for development)
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_ENDPOINT_OVERRIDE_KMS: http://localstack:4566
+      # Spring Cloud AWS Configuration
+      SPRING_CLOUD_AWS_REGION_STATIC: us-east-1
+      SPRING_CLOUD_AWS_S3_ENDPOINT: http://localstack:4566
+      SPRING_CLOUD_AWS_KMS_ENDPOINT: http://localstack:4566
+      # Logging Configuration
       LOGGING_LEVEL_ROOT: INFO
       LOGGING_LEVEL_COM_PII: DEBUG
+      LOGGING_LEVEL_SOFTWARE_AMAZON_AWSSDK: WARN
     ports:
       - "8080:8080"
     depends_on:
+      localstack:
+        condition: service_healthy
       postgres:
         condition: service_healthy
     networks:
@@ -61,6 +101,8 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  localstack_data:
     driver: local
 
 networks:

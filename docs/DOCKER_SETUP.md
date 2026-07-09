@@ -48,7 +48,7 @@ sudo apt install podman-compose  # Ubuntu/Debian
 # Navigate to project root
 cd /path/to/pii-vault
 
-# Start all services (PostgreSQL + PII Vault)
+# Start all services (LocalStack + PostgreSQL + PII Vault)
 podman-compose up -d
 
 # View logs
@@ -63,8 +63,9 @@ podman-compose ps
 
 # Expected output:
 # CONTAINER ID  IMAGE                          COMMAND              CREATED      STATUS      PORTS                 NAMES
-# xxxxx         pii-vault:latest              java -jar pii-...    2 mins ago   Up 1 min    0.0.0.0:8080->8080   pii-vault-app
+# xxxxx         localstack/localstack:latest  localstack start     2 mins ago   Up 1 min    0.0.0.0:4566->4566   pii-vault-localstack
 # xxxxx         postgres:16-alpine            postgres             2 mins ago   Up 2 mins   0.0.0.0:5432->5432   pii-vault-postgres
+# xxxxx         pii-vault:latest              java -jar pii-...    2 mins ago   Up 1 min    0.0.0.0:8080->8080   pii-vault-app
 ```
 
 ### 3. Access PII Vault API
@@ -77,7 +78,27 @@ curl http://localhost:8080/api/health
 # {"status":"UP"}
 ```
 
-### 4. Access PostgreSQL
+### 4. Access LocalStack (AWS Services Emulation)
+
+```bash
+# Check LocalStack KMS service
+curl http://localhost:4566/
+
+# List KMS keys
+aws kms list-keys --endpoint-url http://localhost:4566
+
+# Create a KMS key
+aws kms create-key --endpoint-url http://localhost:4566 \
+  --description "PII Vault development key"
+
+# AWS Credentials (LocalStack development defaults)
+# Access Key: test
+# Secret Key: test
+# Region: us-east-1
+# Endpoint: http://localhost:4566
+```
+
+### 5. Access PostgreSQL
 
 ```bash
 # Connect via psql
@@ -142,6 +163,114 @@ podman-compose logs -f pii-vault
 
 # Last N lines
 podman-compose logs --tail 100 pii-vault
+```
+
+## LocalStack Integration
+
+LocalStack provides local AWS service emulation for development, including KMS (Key Management Service) needed for PII Vault's key management.
+
+### LocalStack Services
+
+The `podman-compose.yml` includes LocalStack with the following services:
+
+```yaml
+SERVICES: kms,cloudtrail,logs
+```
+
+- **KMS**: Key Management Service for encryption key management
+- **CloudTrail**: CloudTrail logging for audit and compliance
+- **Logs**: CloudWatch Logs for application logging
+
+### Accessing LocalStack
+
+**Endpoint URL**: `http://localhost:4566`
+
+**Default Credentials**:
+- Access Key ID: `test`
+- Secret Access Key: `test`
+- Region: `us-east-1`
+
+### Creating KMS Keys
+
+```bash
+# List existing keys
+aws kms list-keys --endpoint-url http://localhost:4566
+
+# Create a new KMS key
+aws kms create-key \
+  --endpoint-url http://localhost:4566 \
+  --description "PII Vault Development Key"
+
+# Create an alias for the key (easier to reference)
+aws kms create-alias \
+  --alias-name alias/pii-vault-dev-key \
+  --target-key-id <key-id> \
+  --endpoint-url http://localhost:4566
+
+# Encrypt data with KMS key
+aws kms encrypt \
+  --key-id alias/pii-vault-dev-key \
+  --plaintext "sensitive-data" \
+  --endpoint-url http://localhost:4566
+
+# Decrypt encrypted data
+aws kms decrypt \
+  --ciphertext-blob <base64-encrypted-data> \
+  --endpoint-url http://localhost:4566
+```
+
+### Environment Variables for LocalStack
+
+PII Vault automatically connects to LocalStack when running via podman-compose:
+
+```yaml
+AWS_REGION: us-east-1
+AWS_ACCESS_KEY_ID: test
+AWS_SECRET_ACCESS_KEY: test
+AWS_ENDPOINT_OVERRIDE_KMS: http://localstack:4566
+SPRING_CLOUD_AWS_KMS_ENDPOINT: http://localstack:4566
+```
+
+### LocalStack Persistence
+
+LocalStack data is persisted in a Docker volume (`localstack_data`), so your KMS keys and CloudTrail logs survive container restarts:
+
+```bash
+# View LocalStack data volume
+podman volume inspect pii_vault_localstack_data
+
+# Clear LocalStack data (starts fresh)
+podman-compose down -v
+```
+
+### Health Checks
+
+LocalStack includes a health check that verifies KMS service is available:
+
+```bash
+# Manual health check
+podman-compose exec localstack awslocal kms list-keys
+
+# View LocalStack logs
+podman-compose logs localstack
+```
+
+### Troubleshooting LocalStack
+
+```bash
+# Check LocalStack is running
+curl http://localhost:4566/
+
+# View detailed logs
+podman-compose logs localstack
+
+# Restart LocalStack
+podman-compose restart localstack
+
+# Force rebuild LocalStack
+podman-compose down
+podman-compose build --no-cache
+podman-compose up -d localstack
 ```
 
 ## Docker Image Details
