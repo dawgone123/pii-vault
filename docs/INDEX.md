@@ -15,6 +15,7 @@ Welcome to the PII Vault documentation. This directory contains all product and 
 
 ### Getting Started
 - **[GETTING_STARTED.md](./GETTING_STARTED.md)** - Setup and installation guide
+- **[DOCKER_SETUP.md](./DOCKER_SETUP.md)** - Podman containerized development guide
 - **[API.md](./API.md)** - API documentation and examples
 
 ### Architecture & Design
@@ -40,8 +41,10 @@ Welcome to the PII Vault documentation. This directory contains all product and 
 docs/
 ├── INDEX.md (this file)
 ├── PRD.md
-├── GETTING_STARTED.md
 ├── API.md
+├── GETTING_STARTED.md
+├── DOCKER_SETUP.md
+├── KMS_STRATEGY.md
 ├── ARCHITECTURE.md
 ├── DEPLOYMENT.md
 ├── SECURITY.md
@@ -80,6 +83,7 @@ Start with [PRD.md](./PRD.md) for product vision, features, and roadmap.
 | API.md | Complete | 2026-07-08 |
 | KMS_STRATEGY.md | Complete (v2) | 2026-07-08 |
 | GETTING_STARTED.md | Complete | 2026-07-08 |
+| DOCKER_SETUP.md | Complete | 2026-07-08 |
 | ARCHITECTURE.md | Pending | - |
 | DEPLOYMENT.md | Pending | - |
 | SECURITY.md | Pending | - |

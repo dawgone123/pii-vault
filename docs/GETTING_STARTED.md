@@ -6,11 +6,11 @@ This guide will help you set up and run the PII Vault application in your local 
 
 Before you begin, ensure you have the following installed:
 
-- **Java Development Kit (JDK)**: Version 21 or higher
+- **Java Development Kit (JDK)**: Version 25 or higher
   ```bash
   java -version
   ```
-  Expected output: `openjdk version "21"` or higher
+  Expected output: `openjdk version "25"` or higher
 
 - **Maven**: Version 3.6 or higher
   ```bash
@@ -22,7 +22,13 @@ Before you begin, ensure you have the following installed:
   git --version
   ```
 
-- **PostgreSQL** (Optional, for production setup): Version 14 or higher
+- **PostgreSQL** (Optional, for local setup): Version 16 or higher
+
+- **Podman** (Optional, for containerized development): Latest version
+  ```bash
+  podman --version
+  ```
+  See [DOCKER_SETUP.md](./DOCKER_SETUP.md) for Podman installation
 
 ## Project Structure
 
@@ -63,20 +69,20 @@ cd pii-vault
 java -version
 ```
 
-For Spring Boot 4.0.0, you need Java 21 or higher. If you don't have it, install it:
+For Spring Boot 4.0.0, you need Java 25 or higher. If you don't have it, install it:
 
 **macOS (using Homebrew):**
 ```bash
-brew install openjdk@21
+brew install openjdk@25
 ```
 
 **Ubuntu/Debian:**
 ```bash
-sudo apt-get install openjdk-21-jdk
+sudo apt-get install openjdk-25-jdk
 ```
 
 **Windows:**
-Download from [Oracle](https://www.oracle.com/java/technologies/downloads/) or use [AdoptOpenJDK](https://adoptopenjdk.net/)
+Download from [Oracle](https://www.oracle.com/java/technologies/downloads/) or use [Eclipse Temurin](https://adoptium.net/)
 
 ### 3. Clean and Build
 
@@ -342,6 +348,47 @@ mvn test -X
 mvn install -DskipTests
 ```
 
+## Podman Development Setup
+
+For containerized development without local Java/Maven installation:
+
+### Quick Start with Podman Compose
+
+```bash
+# Navigate to project root
+cd pii-vault
+
+# Start all services (PostgreSQL + PII Vault)
+podman-compose up -d
+
+# View logs
+podman-compose logs -f pii-vault
+
+# Verify application is running
+curl http://localhost:8080/api/health
+```
+
+### Rebuild After Code Changes
+
+```bash
+# Stop services
+podman-compose down
+
+# Rebuild with latest code
+podman-compose build --no-cache
+
+# Start again
+podman-compose up -d
+```
+
+### Access Services
+
+- **PII Vault API**: http://localhost:8080/api
+- **PostgreSQL**: `localhost:5432` (user: `vault_user`, password: `vault_password_dev`)
+- **H2 Console**: http://localhost:8081/h2-console
+
+For detailed Podman setup instructions, see [DOCKER_SETUP.md](./DOCKER_SETUP.md)
+
 ## Next Steps
 
 1. **Read the API Documentation**: See [API.md](./API.md) for endpoint specifications
@@ -371,17 +418,21 @@ mvn clean
 # Check dependency tree
 mvn dependency:tree
 
-# Format code
-mvn spotless:apply
+# Podman commands
+podman-compose up -d          # Start all services
+podman-compose down           # Stop all services
+podman-compose logs -f        # View logs
+podman-compose ps             # List running containers
 ```
 
 ## Additional Resources
 
 - [Spring Boot Documentation](https://spring.io/projects/spring-boot)
 - [Maven Documentation](https://maven.apache.org/guides/)
-- [Java 21 Features](https://www.oracle.com/java/technologies/javase/jdk21-doc.html)
+- [Java 25 Features](https://www.oracle.com/java/technologies/javase/jdk25-doc.html)
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+- [Podman Documentation](https://podman.io/)
 
 ---
 
-**Last Updated**: 2026-07-07
+**Last Updated**: 2026-07-08
