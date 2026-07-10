@@ -98,13 +98,16 @@ aws kms create-key --endpoint-url http://localhost:4566 \
 # Endpoint: http://localhost:4566
 ```
 
-### 5. Access PostgreSQL
+### 5. Access PostgreSQL 18
 
 ```bash
 # Connect via psql
 psql -h localhost -U vault_user -d pii_vault -c "SELECT version();"
 
 # Password: vault_password_dev
+
+# Example output (PostgreSQL 18.x):
+# PostgreSQL 18.0 on x86_64-pc-linux-gnu, ...
 
 # Or use pgAdmin/DBeaver for GUI access
 # Host: localhost
@@ -113,6 +116,46 @@ psql -h localhost -U vault_user -d pii_vault -c "SELECT version();"
 # Username: vault_user
 # Password: vault_password_dev
 ```
+
+### 6. Access Observability Stack (VictoriaMetrics & Grafana)
+
+#### VictoriaMetrics
+```bash
+# Time-series database endpoint
+curl http://localhost:8428/api/v1/query?query=pii_vault_encryption_operations_total
+
+# View metrics in Prometheus format
+curl http://localhost:8428/metrics
+```
+
+#### Grafana Dashboards
+```
+URL: http://localhost:3000
+Username: admin
+Password: admin
+
+Pre-configured Dashboards:
+- Operations Dashboard: Encryption throughput, latency (p50/p95/p99), error rates
+- Performance Dashboard: JVM metrics, request latency, thread counts
+```
+
+**First-time setup**:
+1. Open http://localhost:3000
+2. Login with admin/admin
+3. Grafana automatically connects to VictoriaMetrics datasource
+4. Navigate to Dashboards → PII Vault folder
+5. View real-time metrics as operations are performed
+
+### PostgreSQL 18 Features Used
+
+PII Vault leverages PostgreSQL 18 features for enhanced performance and functionality:
+
+- **pg_stat_statements**: Query performance monitoring (enabled by default)
+- **JSONB Operations**: Efficient JSON blob storage for PII data
+- **Range Types**: Date range partitioning for operational tier management
+- **Generated Columns**: Computed columns for immutability enforcement
+- **Full Text Search**: Future support for data discovery (upstream service)
+- **Advanced Indexing**: BRIN, GiST, and GIN indexes for performance
 
 ## Development Workflow
 
@@ -271,6 +314,173 @@ podman-compose restart localstack
 podman-compose down
 podman-compose build --no-cache
 podman-compose up -d localstack
+```
+
+## Observability with VictoriaMetrics & Grafana
+
+The PII Vault development stack includes lightweight observability with VictoriaMetrics and Grafana for real-time monitoring.
+
+### VictoriaMetrics
+
+VictoriaMetrics is a lightweight time-series database that collects metrics from the application:
+
+**Features**:
+- Accepts Prometheus-format metrics via HTTP push
+- Efficient storage (10x+ smaller than Prometheus)
+- Query API compatible with Prometheus
+- Built for high-cardinality metrics
+- Single binary, no dependencies
+
+**Endpoint**: `http://localhost:8428`
+
+**Querying Metrics**:
+```bash
+# Query metrics via HTTP API
+curl 'http://localhost:8428/api/v1/query?query=pii_vault_encryption_operations_total'
+
+# View raw metrics
+curl http://localhost:8428/metrics
+
+# Query range over time (last hour)
+curl 'http://localhost:8428/api/v1/query_range?query=rate(pii_vault_encryption_operations_total[1m])&start=1h&end=now'
+```
+
+**Supported Query Format**: MetricsQL (Prometheus PromQL compatible)
+
+### Grafana Dashboards
+
+Grafana provides visualization of metrics collected by VictoriaMetrics.
+
+**Endpoint**: `http://localhost:3000`
+
+**Default Credentials**:
+- Username: `admin`
+- Password: `admin`
+
+**Pre-Configured Dashboards**:
+
+1. **Operations Dashboard**:
+   - Encryption throughput (ops/sec)
+   - Encryption/decryption latency percentiles (p50, p95, p99)
+   - Error rates (encryption/decryption failures)
+   - Database connection pool status
+
+2. **Performance Dashboard**:
+   - Request latency distribution (p50, p95, p99)
+   - Request rate per endpoint
+   - JVM memory usage (heap used/max)
+   - JVM thread count (live/peak)
+
+**Accessing Dashboards**:
+1. Open http://localhost:3000 in browser
+2. Login with `admin` / `admin`
+3. Navigate to Dashboards in left menu
+4. Click on "PII Vault - Operations Dashboard" or "PII Vault - Performance Dashboard"
+5. Refresh rate set to 10 seconds by default
+
+**Customizing Dashboards**:
+```bash
+# Edit dashboard JSON
+./docker/grafana/provisioning/dashboards/operations-dashboard.json
+
+# Restart Grafana to apply changes
+podman-compose restart grafana
+```
+
+### Metrics Collection Flow
+
+```
+PII Vault Application (Micrometer)
+  ↓ (Prometheus format push every 15s)
+VictoriaMetrics (http://localhost:8428)
+  ↓ (Time-series storage)
+Grafana (http://localhost:3000)
+  ↓ (Query & Visualize)
+Operations/Performance Dashboards
+```
+
+### Spring Boot Actuator
+
+The application exposes metrics via Spring Boot Actuator:
+
+```bash
+# Health endpoint
+curl http://localhost:8080/api/actuator/health
+
+# All metrics
+curl http://localhost:8080/api/actuator/metrics
+
+# Specific metric
+curl http://localhost:8080/api/actuator/metrics/pii.vault.encryption.latency
+```
+
+**Configuration** (`src/main/resources/application.yml`):
+```yaml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+```
+
+### VictoriaMetrics Storage
+
+VictoriaMetrics stores data in a Docker volume for persistence:
+
+```bash
+# View VictoriaMetrics volume
+podman volume inspect pii_vault_victoriametrics_data
+
+# Backup metrics data
+podman run --rm -v pii_vault_victoriametrics_data:/data -v $(pwd)/backups:/backup \
+  alpine tar czf /backup/metrics-backup.tar.gz /data
+
+# Clear metrics data (starts fresh)
+podman volume rm pii_vault_victoriametrics_data
+```
+
+### Monitoring Best Practices
+
+**1. Encryption Performance**:
+- Watch `pii_vault_encryption_latency` p95 latency
+- Target: < 50ms for 95% of operations
+- Alert if p95 > 100ms
+
+**2. Throughput**:
+- Monitor `pii_vault_encryption_operations_total` rate
+- Target: >= 1000 ops/sec during load tests
+- Alert if drops below baseline
+
+**3. Error Rates**:
+- Watch `pii_vault_encryption_errors_total` rate
+- Target: < 0.1% error rate
+- Alert if > 1% errors
+
+**4. JVM Health**:
+- Monitor heap memory utilization
+- Alert if heap > 80% of max
+- Watch for full GC pauses
+
+### Troubleshooting Observability
+
+```bash
+# VictoriaMetrics not receiving metrics
+podman-compose logs victoriametrics
+
+# Check if app is pushing metrics
+curl http://localhost:8080/api/actuator/metrics | grep pii_vault
+
+# Grafana datasource connection issue
+podman-compose logs grafana
+
+# Reset Grafana (careful - loses all changes)
+podman-compose down
+podman volume rm pii_vault_grafana_data
+podman-compose up -d grafana
 ```
 
 ## Docker Image Details

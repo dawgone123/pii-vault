@@ -1,0 +1,104 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "pii-vault-ops",
+    "title": "PII Vault - Operations Dashboard",
+    "tags": ["pii-vault", "operations"],
+    "timezone": "browser",
+    "schemaVersion": 27,
+    "version": 1,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Encryption Throughput (ops/sec)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(pii_vault_encryption_operations_total[1m])",
+            "refId": "A",
+            "legendFormat": "Encrypt Ops/sec"
+          },
+          {
+            "expr": "rate(pii_vault_decryption_operations_total[1m])",
+            "refId": "B",
+            "legendFormat": "Decrypt Ops/sec"
+          }
+        ],
+        "yaxes": [
+          {"format": "ops", "label": "Operations/sec"}
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Encryption Latency (ms)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.5, rate(pii_vault_encryption_latency_seconds_bucket[5m])) * 1000",
+            "refId": "A",
+            "legendFormat": "p50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(pii_vault_encryption_latency_seconds_bucket[5m])) * 1000",
+            "refId": "B",
+            "legendFormat": "p95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(pii_vault_encryption_latency_seconds_bucket[5m])) * 1000",
+            "refId": "C",
+            "legendFormat": "p99"
+          }
+        ],
+        "yaxes": [
+          {"format": "ms", "label": "Latency (ms)"}
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Error Rate",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "rate(pii_vault_encryption_errors_total[1m])",
+            "refId": "A",
+            "legendFormat": "Encryption Errors/sec"
+          },
+          {
+            "expr": "rate(pii_vault_decryption_errors_total[1m])",
+            "refId": "B",
+            "legendFormat": "Decryption Errors/sec"
+          }
+        ],
+        "yaxes": [
+          {"format": "ops", "label": "Errors/sec"}
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Database Connections",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "pii_vault_db_connections_active",
+            "refId": "A",
+            "legendFormat": "Active Connections"
+          },
+          {
+            "expr": "pii_vault_db_connections_max",
+            "refId": "B",
+            "legendFormat": "Max Connections"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Connections"}
+        ]
+      }
+    ]
+  },
+  "overwrite": true
+}

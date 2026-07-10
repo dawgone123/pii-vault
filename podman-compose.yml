@@ -27,14 +27,15 @@ services:
     networks:
       - pii-vault-network
 
-  # PostgreSQL database for PII Vault
+  # PostgreSQL database for PII Vault (Latest LTS)
   postgres:
-    image: docker.io/library/postgres:16-alpine
+    image: docker.io/library/postgres:18.1-alpine
     container_name: pii-vault-postgres
     environment:
       POSTGRES_DB: pii_vault
       POSTGRES_USER: vault_user
       POSTGRES_PASSWORD: vault_password_dev
+      POSTGRES_INITDB_ARGS: "-c shared_preload_libraries=pg_stat_statements"
     ports:
       - "5432:5432"
     volumes:
@@ -87,22 +88,59 @@ services:
       - pii-vault-network
     restart: on-failure
 
-  # Optional: H2 Console for development (if using H2)
-  h2-console:
-    image: docker.io/library/alpine:latest
-    container_name: pii-vault-h2-console
+  # VictoriaMetrics for time-series metrics collection
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:latest
+    container_name: pii-vault-victoriametrics
     ports:
-      - "8081:8081"
-    environment:
-      H2_WEB_CONSOLE_PORT: "8081"
+      - "8428:8428"
+    volumes:
+      - victoriametrics_data:/storage
+    command:
+      - "--storageDataPath=/storage"
+      - "--httpListenAddr=:8428"
+      - "--retentionPeriod=30d"
     networks:
       - pii-vault-network
-    command: echo "H2 Console ready on http://localhost:8081/h2-console"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8428/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Grafana for visualization of metrics from VictoriaMetrics
+  grafana:
+    image: grafana/grafana:latest
+    container_name: pii-vault-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./docker/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+    depends_on:
+      victoriametrics:
+        condition: service_healthy
+    networks:
+      - pii-vault-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
     driver: local
   localstack_data:
+    driver: local
+  victoriametrics_data:
+    driver: local
+  grafana_data:
     driver: local
 
 networks:

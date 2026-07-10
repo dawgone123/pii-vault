@@ -1,6 +1,6 @@
 # Multi-stage build for PII Vault
-# Stage 1: Build
-FROM docker.io/library/maven:3.9-eclipse-temurin-25 AS builder
+# Stage 1: Build (Latest Maven with Java 25)
+FROM docker.io/library/maven:3.9.9-eclipse-temurin-25 AS builder
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ RUN mvn dependency:go-offline
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Stage 2: Runtime
+# Stage 2: Runtime (Latest Java 25 on Ubuntu)
 FROM docker.io/library/eclipse-temurin:25-jdk-noble
 
 WORKDIR /app

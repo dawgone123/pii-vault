@@ -1,0 +1,99 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "pii-vault-perf",
+    "title": "PII Vault - Performance Dashboard",
+    "tags": ["pii-vault", "performance"],
+    "timezone": "browser",
+    "schemaVersion": 27,
+    "version": 1,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Request Latency Percentiles (ms)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m])) * 1000",
+            "refId": "A",
+            "legendFormat": "p50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000",
+            "refId": "B",
+            "legendFormat": "p95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) * 1000",
+            "refId": "C",
+            "legendFormat": "p99"
+          }
+        ],
+        "yaxes": [
+          {"format": "ms", "label": "Latency (ms)"}
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Request Rate (req/sec)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[1m])",
+            "refId": "A",
+            "legendFormat": "{{method}} {{path}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "ops", "label": "Requests/sec"}
+        ]
+      },
+      {
+        "id": 3,
+        "title": "JVM Memory Usage (MB)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "jvm_memory_used_bytes{area=\"heap\"} / 1024 / 1024",
+            "refId": "A",
+            "legendFormat": "Heap Used"
+          },
+          {
+            "expr": "jvm_memory_max_bytes{area=\"heap\"} / 1024 / 1024",
+            "refId": "B",
+            "legendFormat": "Heap Max"
+          }
+        ],
+        "yaxes": [
+          {"format": "bytes", "label": "Memory (MB)"}
+        ]
+      },
+      {
+        "id": 4,
+        "title": "JVM Thread Count",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "jvm_threads_live_threads",
+            "refId": "A",
+            "legendFormat": "Live Threads"
+          },
+          {
+            "expr": "jvm_threads_peak_threads",
+            "refId": "B",
+            "legendFormat": "Peak Threads"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Thread Count"}
+        ]
+      }
+    ]
+  },
+  "overwrite": true
+}

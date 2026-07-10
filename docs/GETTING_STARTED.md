@@ -22,7 +22,7 @@ Before you begin, ensure you have the following installed:
   git --version
   ```
 
-- **PostgreSQL** (Optional, for local setup): Version 16 or higher
+- **PostgreSQL** (Optional, for local setup): Version 18 or higher
 
 - **Podman** (Optional, for containerized development): Latest version
   ```bash
@@ -385,9 +385,35 @@ podman-compose up -d
 
 - **PII Vault API**: http://localhost:8080/api
 - **PostgreSQL**: `localhost:5432` (user: `vault_user`, password: `vault_password_dev`)
-- **H2 Console**: http://localhost:8081/h2-console
+- **VictoriaMetrics**: http://localhost:8428 (time-series database)
+- **Grafana**: http://localhost:3000 (dashboards, default user: `admin`, password: `admin`)
 
 For detailed Podman setup instructions, see [DOCKER_SETUP.md](./DOCKER_SETUP.md)
+
+### Observability with VictoriaMetrics & Grafana
+
+The PII Vault application comes with integrated observability using:
+
+**VictoriaMetrics**: Lightweight time-series database that collects metrics from the application via Micrometer.
+
+**Grafana**: Visualization dashboard for monitoring:
+- Operations Dashboard: Throughput, latency percentiles, error rates
+- Performance Dashboard: JVM memory, thread counts, request rates
+
+**Accessing Grafana**:
+1. Open http://localhost:3000
+2. Login with credentials: `admin` / `admin`
+3. Navigate to Dashboards:
+   - **Operations Dashboard**: Real-time encryption ops/sec, latency (p50/p95/p99), error rates
+   - **Performance Dashboard**: JVM metrics, request latency distribution, thread count
+4. Grafana automatically connects to VictoriaMetrics datasource
+
+**Metrics Collected**:
+- Encryption operations (throughput, latency, errors)
+- HTTP request metrics (latency, rate, errors)
+- JVM metrics (memory, threads, GC)
+- Database connection pool status
+- Cache hit ratios (if enabled)
 
 ## Next Steps
 

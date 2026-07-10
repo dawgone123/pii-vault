@@ -30,7 +30,7 @@ PII Vault is an enterprise-grade Java Spring Boot 4.0.0 application designed as 
 | **Maven** | 3.6+ | Build and dependency management |
 | **Records** | Java 21+ | Immutable data carriers (replaces Lombok) |
 | **JPA/Hibernate** | Latest | Robust ORM for database operations |
-| **PostgreSQL** | 16+ | Production database |
+| **PostgreSQL** | 18+ | Production database with latest features |
 | **H2 Database** | Latest | Development database |
 | **Spring Security** | Latest | Authentication and authorization |
 | **Podman/Docker** | Latest | Containerized development environment |

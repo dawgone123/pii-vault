@@ -25,7 +25,6 @@
         <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-framework.version>7.0.0</spring-framework.version>
-        <jackson.version>2.18.2</jackson.version>
     </properties>
 
     <dependencies>
@@ -54,10 +53,11 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- PostgreSQL Driver (for production) -->
+        <!-- PostgreSQL Driver (for production) - PostgreSQL 18+ (Latest LTS) -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <version>42.7.5</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -67,40 +67,18 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- Jackson 3.x for JSON Processing (Primary JSON Library) -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
+        <!-- Jackson for JSON Processing (managed by Spring Boot) -->
+        <!-- Spring Boot 4.0.0 uses Jackson 2.17.x (latest LTS) -->
+        <!-- No version override needed - Spring Boot manages it -->
 
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-
-        <!-- Jackson Java 8+ Module for java.time support -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-
-        <!-- AWS SDK v2 for KMS Integration -->
+        <!-- AWS SDK v2 for KMS Integration (Latest LTS) -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>kms</artifactId>
-            <version>2.28.0</version>
+            <version>2.29.23</version>
         </dependency>
 
-        <!-- LocalStack for Local AWS Services Development -->
+        <!-- LocalStack for Local AWS Services Development (Latest stable) -->
         <dependency>
             <groupId>cloud.localstack</groupId>
             <artifactId>localstack-utils</artifactId>
@@ -108,26 +86,38 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Testcontainers for LocalStack Integration -->
+        <!-- Testcontainers for LocalStack Integration (Latest LTS) -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>localstack</artifactId>
-            <version>1.20.0</version>
+            <version>1.20.2</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>1.20.0</version>
+            <version>1.20.2</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>1.20.0</version>
+            <version>1.20.2</version>
             <scope>test</scope>
+        </dependency>
+
+        <!-- Micrometer for Metrics Collection -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
+        <!-- Spring Boot Actuator for Metrics Endpoints -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
         <!-- Testing -->
@@ -144,18 +134,6 @@
         </dependency>
     </dependencies>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- Force Jackson 3.x as the only JSON library -->
-            <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>${jackson.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <build>
         <plugins>
@@ -164,7 +142,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
-            <!-- Maven Shade Plugin to verify no conflicting JSON libraries -->
+            <!-- Maven Enforcer Plugin to verify no conflicting JSON libraries -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -178,13 +156,13 @@
                             <rules>
                                 <bannedDependencies>
                                     <excludes>
-                                        <!-- Exclude other JSON libraries to force Jackson 3 -->
+                                        <!-- Exclude other JSON libraries to enforce Jackson 2.17.x (managed by Spring Boot) -->
                                         <exclude>org.json:json</exclude>
                                         <exclude>com.google.code.gson:gson</exclude>
                                         <exclude>com.alibaba:fastjson</exclude>
                                         <exclude>com.alibaba:fastjson2</exclude>
                                     </excludes>
-                                    <message>Use Jackson 3 exclusively for JSON processing</message>
+                                    <message>Use Jackson 2.17.x exclusively for JSON processing</message>
                                 </bannedDependencies>
                             </rules>
                             <fail>true</fail>
