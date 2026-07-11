@@ -317,8 +317,11 @@ Detailed explanation of changes:
 
 Fixes: #ISSUE_NUMBER (if applicable)
 
+Co-Authored-By: AJ Jaiswal <anujrjaiswal@outlook.com>
 Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>
 ```
+
+**Note**: All commits must include both authors since this is collaborative work between AJ and Claude.
 
 ### Types
 - `feat:` - New feature
@@ -327,6 +330,20 @@ Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>
 - `docs:` - Documentation only
 - `test:` - Test additions/improvements
 - `chore:` - Build, dependency updates, tooling
+
+### Two-Author Convention (Critical)
+⚠️ **All commits must include both authors**:
+```
+Co-Authored-By: AJ Jaiswal <anujrjaiswal@outlook.com>
+Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>
+```
+
+This reflects the collaborative nature of development:
+- AJ handles decision-making, requirements, code review, and deployment
+- Claude implements features, fixes bugs, and maintains code quality
+- Every commit is a joint effort
+
+**Do not omit either author** - this is the project convention.
 
 ### Examples
 ```bash
@@ -337,11 +354,25 @@ git commit -m "feat: Add KMS-only encryption service
 - Add LocalStack integration for development
 - Update EncryptionService tests with mock KMS
 
+Co-Authored-By: AJ Jaiswal <anujrjaiswal@outlook.com>
 Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
 
 # Good squash for multi-commit features
 git rebase -i main
 # Then squash intermediate commits
+
+# Using git commit with HEREDOC for proper formatting
+git commit -m "$(cat <<'EOF'
+feat: Add KMS-only encryption service
+
+- Implement EncryptionService delegating to AWS KMS
+- Add LocalStack integration for development
+- Update EncryptionService tests with mock KMS
+
+Co-Authored-By: AJ Jaiswal <anujrjaiswal@outlook.com>
+Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>
+EOF
+)"
 ```
 
 ### Push Rules
