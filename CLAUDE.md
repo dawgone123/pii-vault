@@ -2,7 +2,7 @@
 
 **Last Updated**: July 10, 2026  
 **Project**: PII Vault - Secure PII Management System  
-**Team**: AJ Jaiswal (anujrjaiswal@outlook.com)
+**Team**: dawgone123
 
 ---
 
@@ -317,7 +317,7 @@ Detailed explanation of changes:
 
 Fixes: #ISSUE_NUMBER (if applicable)
 
-Co-Authored-By: AJ Jaiswal <anujrjaiswal@outlook.com>
+Co-Authored-By: dawgone123 <anujrjaiswal@outlook.com>
 Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>
 ```
 
@@ -334,7 +334,7 @@ Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>
 ### Two-Author Convention (Critical)
 ⚠️ **All commits must include both authors**:
 ```
-Co-Authored-By: AJ Jaiswal <anujrjaiswal@outlook.com>
+Co-Authored-By: dawgone123 <anujrjaiswal@outlook.com>
 Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>
 ```
 
@@ -354,7 +354,7 @@ git commit -m "feat: Add KMS-only encryption service
 - Add LocalStack integration for development
 - Update EncryptionService tests with mock KMS
 
-Co-Authored-By: AJ Jaiswal <anujrjaiswal@outlook.com>
+Co-Authored-By: dawgone123 <anujrjaiswal@outlook.com>
 Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
 
 # Good squash for multi-commit features
@@ -369,7 +369,7 @@ feat: Add KMS-only encryption service
 - Add LocalStack integration for development
 - Update EncryptionService tests with mock KMS
 
-Co-Authored-By: AJ Jaiswal <anujrjaiswal@outlook.com>
+Co-Authored-By: dawgone123 <anujrjaiswal@outlook.com>
 Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>
 EOF
 )"
@@ -641,8 +641,8 @@ SELECT partman.create_parent(
 ## Contact & Support
 
 ### Communication
+- **GitHub**: @dawgone123
 - **Primary**: GitHub issues/discussions
-- **Email**: anujrjaiswal@outlook.com
 - **Status Updates**: Commit messages & documentation
 
 ### When to Ask Claude
@@ -711,6 +711,6 @@ rm -rf ~/.m2/repository              # Clear Maven cache
 
 **Last Reviewed**: July 10, 2026  
 **Next Review**: August 10, 2026  
-**Maintained By**: AJ Jaiswal  
+**Maintained By**: @dawgone123  
 **Status**: ✅ Current & Complete
 
