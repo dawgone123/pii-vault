@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # LocalStack for AWS Services Emulation (KMS, etc.)
   localstack:
-    image: localstack/localstack:0.11.2
+    image: localstack/localstack:0.14.2
     container_name: pii-vault-localstack
     ports:
       - "4566:4566"

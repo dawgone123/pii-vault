@@ -77,10 +77,10 @@
   - Multi-region key replication (Phase 3+)
 
 ### LocalStack
-- **Version**: 0.2.25 (AWS 4.14 compatible)
+- **Version**: 0.14.2 (Latest stable without license requirements)
 - **Purpose**: Local AWS services emulation
 - **Artifacts**:
-  - `cloud.localstack:localstack-utils:0.2.25` (test scope)
+  - `cloud.localstack:localstack-utils:0.2.23` (test scope)
 - **Services Emulated**:
   - KMS (Key Management Service)
   - CloudTrail (audit logging)
@@ -177,7 +177,7 @@
 | `maven` | 3.9.9-eclipse-temurin-25 | Build stage container |
 | `eclipse-temurin` | 25-jdk-noble | Runtime base image |
 | `postgres` | 18.1-alpine | PostgreSQL database |
-| `localstack/localstack` | latest | AWS services mock |
+| `localstack/localstack` | 0.14.2 | AWS services mock |
 | `victoriametrics/victoria-metrics` | latest | Metrics database |
 | `grafana/grafana` | latest | Metrics visualization |
 
@@ -239,7 +239,7 @@ To maintain security and prevent dependency conflicts:
 |-----------|---------|---------|--------------|--------------|
 | Jackson | 2.17.2 (Spring-managed) | ✅ | ✅ | N/A |
 | AWS SDK v2 | 2.29.23 | ✅ | ✅ | N/A |
-| LocalStack | 0.2.23 | ✅ | ✅ | ✅ |
+| LocalStack | 0.14.2 | ✅ | ✅ | ✅ |
 | Testcontainers | 1.20.2 | ✅ | ✅ | ✅ |
 | PostgreSQL driver | 42.7.5 | ✅ | ✅ | ✅ |
 | Micrometer | Latest (Spring-managed) | ✅ | ✅ | N/A |

@@ -86,7 +86,7 @@ pii-vault/
 ### AWS & Cryptography
 - **AWS SDK v2**: 2.29.23
 - **AWS KMS**: For all encryption/decryption operations
-- **LocalStack**: 0.2.23 (development AWS mock)
+- **LocalStack**: 0.14.2 (development AWS mock)
 
 ### Observability
 - **Micrometer**: Metrics collection
@@ -126,38 +126,75 @@ podman-compose ps
 # Compile only
 mvn clean compile
 
-# Full build with tests
+# Full build with tests (creates JAR)
 mvn clean install
 
-# Run application
-mvn spring-boot:run
+# Build JAR only (skips tests, faster)
+mvn clean package -DskipTests
+
+# Build and run app locally (for testing before Docker)
+mvn clean spring-boot:run
+```
+
+### Running PII Vault
+```bash
+# Via Maven (direct JVM)
+mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=dev"
+
+# Via Docker (after building JAR)
+# First build JAR: mvn clean package -DskipTests
+# Then build image: podman build -t pii-vault:latest .
+# Then run container: podman-compose up -d
+
+# View app logs
+podman-compose logs -f pii-vault
+
+# Check app health
+curl http://localhost:8080/api/actuator/health
+
+# View app metrics
+curl http://localhost:8080/api/actuator/prometheus | grep pii_vault
 ```
 
 ### Testing
 ```bash
-# Run all tests
+# Run all unit tests
 mvn test
 
 # Run specific test
 mvn test -Dtest=PiiVaultApplicationTests
 
-# Integration tests (uses Testcontainers)
+# Integration tests (uses Testcontainers + LocalStack)
 mvn verify
+
+# Full build with all tests
+mvn clean verify
 ```
 
-### Docker
+### Docker & Containers
 ```bash
-# Build application image
-docker build -t pii-vault:latest .
+# Build JAR locally
+mvn clean package -DskipTests
 
-# Start entire stack
+# Build Docker image from JAR
+podman build -t pii-vault:latest .
+
+# Start entire stack (all 5 services)
 podman-compose up -d
 
-# View logs
-podman-compose logs -f pii-vault
+# Check all services running
+podman-compose ps
 
-# Stop services
-podman-compose down
+# View logs for specific service
+podman-compose logs -f pii-vault
+podman-compose logs -f localstack
+podman-compose logs -f postgres
+
+# Stop services (keep data)
+podman-compose stop
+
+# Stop and remove containers (remove data volumes)
+podman-compose down -v
 ```
 
 ---
