@@ -58,7 +58,6 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>42.7.5</version>
-            <scope>runtime</scope>
         </dependency>
 
         <!-- Jakarta Validation -->
