@@ -55,6 +55,7 @@ pii-vault/
 │   ├── init-extensions.sql                      # PostgreSQL extensions
 │   └── init-db.sql                              # Database schema
 ├── docs/
+│   ├── LOCAL_DEVELOPMENT.md                     # Local dev workflow (START HERE!)
 │   ├── GETTING_STARTED.md
 │   ├── DOCKER_SETUP.md
 │   ├── CONTAINER_DEPENDENCIES.md                # Service architecture
@@ -320,16 +321,18 @@ public class EncryptionService {
 ## Documentation Files
 
 ### Files You Should Know
-- **CLAUDE.md** (this file) - AI collaboration guidelines
+- **CLAUDE.md** (this file) - AI collaboration guidelines & project reference
+- **LOCAL_DEVELOPMENT.md** - ⭐ Local dev workflow (build, run, test, debug)
+- **GETTING_STARTED.md** - For first-time developers
 - **CONTAINER_DEPENDENCIES.md** - Service architecture & startup ordering
 - **CONTAINER_SETUP_SUMMARY.md** - Quick setup & troubleshooting
 - **DOCKER_SETUP.md** - Detailed Docker/Podman instructions
-- **GETTING_STARTED.md** - For first-time developers
 - **LIBRARY_VERSIONS.md** - Dependency version tracking
 - **BUILD_RESOLUTION.md** - Jackson version conflict resolution (historical)
 - **OBSERVABILITY_CHANGES.md** - Observability implementation details
 
 ### When to Update
+- **Dev Workflow Change** → Update `LOCAL_DEVELOPMENT.md`
 - **Architecture Change** → Update `CONTAINER_DEPENDENCIES.md`
 - **Adding Dependencies** → Update `LIBRARY_VERSIONS.md`
 - **Breaking Changes** → Add new doc or create `*_RESOLUTION.md` file
