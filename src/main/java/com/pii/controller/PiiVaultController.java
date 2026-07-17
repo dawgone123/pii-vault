@@ -39,9 +39,4 @@ public class PiiVaultController {
         String decryptedData = encryptionService.decrypt(request.piiData());
         return ResponseEntity.ok(decryptedData);
     }
-
-    @GetMapping("/health")
-    public ResponseEntity<String> health() {
-        return ResponseEntity.ok("{\"status\":\"UP\"}");
-    }
 }

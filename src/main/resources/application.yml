@@ -20,6 +20,12 @@ server:
   servlet:
     context-path: /api
 
+# Actuator endpoints without /actuator prefix
+management:
+  endpoints:
+    web:
+      base-path: /
+
 logging:
   level:
     root: INFO
