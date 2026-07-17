@@ -18,7 +18,31 @@ All operations use UUID v7 for request correlation and tracing.
 http://localhost:8080/api
 ```
 
-All endpoints are prefixed with `/api/v1/`
+## Quick Reference - All Endpoints
+
+| Endpoint | Method | Purpose | Phase |
+|----------|--------|---------|-------|
+| `/health` | GET | Health check (Spring Actuator) | ✅ Phase 1 |
+| `/metrics` | GET | List available metrics | ✅ Phase 1 |
+| `/prometheus` | GET | Prometheus format metrics | ✅ Phase 1 |
+| `/v1/encrypt` | POST | Encrypt single PII entry | ✅ Phase 1 |
+| `/v1/decrypt` | POST | Decrypt token to PII | ✅ Phase 1 |
+| `/v1/batch/encrypt` | POST | Encrypt multiple entries | 📋 Phase 2 |
+| `/v1/batch/decrypt` | POST | Decrypt multiple tokens | 📋 Phase 2 |
+| `/v1/admin/tokens/{id}` | DELETE | Soft-delete token | 📋 Phase 2 |
+| `/v1/admin/tokens/{id}/events` | GET | Get token lifecycle events | 📋 Phase 2 |
+| `/v1/admin/events/stream` | GET | Stream token events (NDJSON) | 📋 Phase 2 |
+
+**Full URLs:**
+```
+GET  http://localhost:8080/api/health
+GET  http://localhost:8080/api/metrics
+GET  http://localhost:8080/api/prometheus
+POST http://localhost:8080/api/v1/encrypt
+POST http://localhost:8080/api/v1/decrypt
+```
+
+All business logic endpoints are under `/v1/` prefix
 
 ## Authentication
 

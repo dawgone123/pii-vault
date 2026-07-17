@@ -444,6 +444,94 @@ mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Xdebug -Xrunjdwp:transport=
 
 ---
 
+## API Endpoints Reference
+
+### All Available Endpoints
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/health` | GET | Health check (Spring Actuator) |
+| `/api/metrics` | GET | List available metrics |
+| `/api/prometheus` | GET | Prometheus format metrics |
+| `/api/v1/encrypt` | POST | Encrypt single PII entry |
+| `/api/v1/decrypt` | POST | Decrypt token to PII |
+
+### Testing Endpoints
+
+#### Health Check
+```bash
+curl http://localhost:8080/api/health
+```
+
+Response:
+```json
+{"groups":["liveness","readiness"],"status":"UP"}
+```
+
+#### Encrypt PII
+```bash
+curl -X POST http://localhost:8080/api/v1/encrypt \
+  -H "Content-Type: application/json" \
+  -d '{
+    "piiData": "user@example.com",
+    "requestId": "550e8400-e29b-41d4-a716-446655440000"
+  }'
+```
+
+Response:
+```json
+{
+  "tokenId": "550e8400-e29b-41d4-a716-446655440001",
+  "encryptedData": "encrypted_base64_string...",
+  "encryptedAt": "2026-07-16T20:22:35Z",
+  "requestId": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+#### Decrypt Token
+```bash
+curl -X POST http://localhost:8080/api/v1/decrypt \
+  -H "Content-Type: application/json" \
+  -d '{
+    "piiData": "encrypted_base64_string...",
+    "requestId": "550e8400-e29b-41d4-a716-446655440001"
+  }'
+```
+
+#### View Metrics
+```bash
+curl http://localhost:8080/api/prometheus | grep pii_vault
+```
+
+#### All Actuator Endpoints
+```bash
+curl http://localhost:8080/api/metrics
+```
+
+### Full API Documentation
+See [API.md](API.md) for complete endpoint documentation including:
+- Request/response formats
+- All parameters and fields
+- Error codes
+- Batch operations (Phase 2)
+- Admin endpoints (Phase 2)
+
+---
+
+## Workflow 4: Debugging
+```bash
+# Terminal 1: Start infrastructure
+podman-compose up
+
+# Terminal 2: Run app with debug port open
+mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005"
+
+# Terminal 3 (in IDE): Attach debugger to localhost:5005
+# Set breakpoints and debug!
+```
+
+---
+
 ## Troubleshooting
 
 ### App Won't Start
